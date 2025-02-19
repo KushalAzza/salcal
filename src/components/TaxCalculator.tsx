@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Card, CardContent, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box } from '@mui/material';
 import IncomeDetails from './IncomeDetails';
 import Deductions from './Deductions';
 import TaxReport from './TaxReport';
+import TaxSlab from './TaxSlab';
 
 interface TaxState {
   oldRegime: {
@@ -24,7 +25,7 @@ interface TaxState {
 
 const TaxCalculator: React.FC = () => {
   const [incomeDetails, setIncomeDetails] = useState({
-    financialYear: "2024-25",
+    financialYear: "2025-26", // Updated default value
     ageGroup: "Below 60",
     salaryIncome: 0,
     interestIncome: 0,
@@ -47,6 +48,8 @@ const TaxCalculator: React.FC = () => {
     'other': 0,
   });
 
+  const [selectedRegime, setSelectedRegime] = useState("Old Regime");
+
   const [taxCalculation, setTaxCalculation] = useState<TaxState>({
     oldRegime: {
       grossIncome: 0,
@@ -68,7 +71,9 @@ const TaxCalculator: React.FC = () => {
   const calculateOldRegimeTax = (taxableIncome: number) => {
     let tax = 0;
     const ageGroup = incomeDetails.ageGroup;
+    const year = incomeDetails.financialYear;
 
+    // For all years including 2025-26, use the same slabs
     if (ageGroup === "Below 60") {
       if (taxableIncome <= 250000) tax = 0;
       else if (taxableIncome <= 500000) tax = (taxableIncome - 250000) * 0.05;
@@ -90,12 +95,32 @@ const TaxCalculator: React.FC = () => {
 
   const calculateNewRegimeTax = (taxableIncome: number) => {
     let tax = 0;
-    if (taxableIncome <= 300000) tax = 0;
-    else if (taxableIncome <= 600000) tax = (taxableIncome - 300000) * 0.05;
-    else if (taxableIncome <= 900000) tax = 15000 + (taxableIncome - 600000) * 0.1;
-    else if (taxableIncome <= 1200000) tax = 45000 + (taxableIncome - 900000) * 0.15;
-    else if (taxableIncome <= 1500000) tax = 90000 + (taxableIncome - 1200000) * 0.2;
-    else tax = 150000 + (taxableIncome - 1500000) * 0.3;
+    const year = incomeDetails.financialYear;
+
+    if (year === "2025-26") {
+      if (taxableIncome <= 400000) tax = 0;
+      else if (taxableIncome <= 800000) tax = (taxableIncome - 400000) * 0.05;
+      else if (taxableIncome <= 1200000) tax = 20000 + (taxableIncome - 800000) * 0.1;
+      else if (taxableIncome <= 1600000) tax = 60000 + (taxableIncome - 1200000) * 0.15;
+      else if (taxableIncome <= 2000000) tax = 120000 + (taxableIncome - 1600000) * 0.2;
+      else if (taxableIncome <= 2400000) tax = 200000 + (taxableIncome - 2000000) * 0.25;
+      else tax = 300000 + (taxableIncome - 2400000) * 0.3;
+    } else if (year === "2024-25" || year === "2023-24") {
+      if (taxableIncome <= 300000) tax = 0;
+      else if (taxableIncome <= 600000) tax = (taxableIncome - 300000) * 0.05;
+      else if (taxableIncome <= 900000) tax = 15000 + (taxableIncome - 600000) * 0.1;
+      else if (taxableIncome <= 1200000) tax = 45000 + (taxableIncome - 900000) * 0.15;
+      else if (taxableIncome <= 1500000) tax = 90000 + (taxableIncome - 1200000) * 0.2;
+      else tax = 150000 + (taxableIncome - 1500000) * 0.3;
+    } else { // 2022-23
+      if (taxableIncome <= 250000) tax = 0;
+      else if (taxableIncome <= 500000) tax = (taxableIncome - 250000) * 0.05;
+      else if (taxableIncome <= 750000) tax = 12500 + (taxableIncome - 500000) * 0.1;
+      else if (taxableIncome <= 1000000) tax = 37500 + (taxableIncome - 750000) * 0.15;
+      else if (taxableIncome <= 1250000) tax = 75000 + (taxableIncome - 1000000) * 0.2;
+      else if (taxableIncome <= 1500000) tax = 125000 + (taxableIncome - 1250000) * 0.25;
+      else tax = 187500 + (taxableIncome - 1500000) * 0.3;
+    }
     return tax;
   };
 
@@ -152,6 +177,7 @@ const TaxCalculator: React.FC = () => {
   }, [incomeDetails, deductions]);
 
   const handleIncomeUpdate = (values: any) => {
+    console.log('Income Update:', values);
     setIncomeDetails(prev => ({
       ...prev,
       ...values
@@ -163,6 +189,11 @@ const TaxCalculator: React.FC = () => {
       ...prev,
       ...values
     }));
+  };
+
+  const handleRegimeChange = (regime: string) => {
+    console.log('Regime Change:', regime);
+    setSelectedRegime(regime);
   };
 
   // Store active tab data in localStorage
@@ -183,6 +214,14 @@ const TaxCalculator: React.FC = () => {
     }));
   }, [incomeDetails, deductions]);
 
+  useEffect(() => {
+    console.log('Current Tax Calculator State:', {
+      financialYear: incomeDetails.financialYear,
+      ageGroup: incomeDetails.ageGroup,
+      selectedRegime
+    });
+  }, [incomeDetails.financialYear, incomeDetails.ageGroup, selectedRegime]);
+
   return (
     <Box sx={{ mt: 2 }}>
       <Box id="income-details">
@@ -201,61 +240,14 @@ const TaxCalculator: React.FC = () => {
         <TaxReport {...taxCalculation} />
       </Box>
       <Box id="tax-slabs" sx={{ mt: 4 }}>
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Tax Slabs
-            </Typography>
-            <TableContainer component={Paper} variant="outlined">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Income Range</TableCell>
-                    <TableCell align="right">Old Regime Rate</TableCell>
-                    <TableCell align="right">New Regime Rate</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Up to ₹2,50,000</TableCell>
-                    <TableCell align="right">0%</TableCell>
-                    <TableCell align="right">0%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>₹2,50,001 to ₹5,00,000</TableCell>
-                    <TableCell align="right">5%</TableCell>
-                    <TableCell align="right">5%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>₹5,00,001 to ₹7,50,000</TableCell>
-                    <TableCell align="right">20%</TableCell>
-                    <TableCell align="right">10%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>₹7,50,001 to ₹10,00,000</TableCell>
-                    <TableCell align="right">20%</TableCell>
-                    <TableCell align="right">15%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>₹10,00,001 to ₹12,50,000</TableCell>
-                    <TableCell align="right">30%</TableCell>
-                    <TableCell align="right">20%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>₹12,50,001 to ₹15,00,000</TableCell>
-                    <TableCell align="right">30%</TableCell>
-                    <TableCell align="right">25%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Above ₹15,00,000</TableCell>
-                    <TableCell align="right">30%</TableCell>
-                    <TableCell align="right">30%</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
+        <TaxSlab 
+          selectedFY={incomeDetails.financialYear}
+          selectedAgeGroup={incomeDetails.ageGroup}
+          selectedRegime={selectedRegime}
+          onFYChange={(fy) => handleIncomeUpdate({ ...incomeDetails, financialYear: fy })}
+          onAgeGroupChange={(age) => handleIncomeUpdate({ ...incomeDetails, ageGroup: age })}
+          onRegimeChange={handleRegimeChange}
+        />
       </Box>
     </Box>
   );

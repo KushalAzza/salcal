@@ -11,7 +11,10 @@ import {
   Typography,
   InputAdornment,
   SelectChangeEvent,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 interface IncomeDetailsProps {
   onUpdate: (values: any) => void;
@@ -68,19 +71,30 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
     onUpdate(newValues);
   };
 
+  const renderLabel = (label: string, tooltip: string) => (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {label}
+      <Tooltip title={tooltip} arrow>
+        <IconButton size="small" sx={{ ml: 0.5 }}>
+          <HelpOutlineIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </div>
+  );
+
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
           Income Details
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
-              <InputLabel>Financial Year</InputLabel>
+              <InputLabel>{renderLabel("Financial Year", "Select the financial year for tax calculation")}</InputLabel>
               <Select
                 value={values.financialYear}
-                label="Financial Year"
+                label={renderLabel("Financial Year", "Select the financial year for tax calculation")}
                 onChange={handleSelectChange('financialYear')}
               >
                 {FINANCIAL_YEARS.map(year => (
@@ -91,10 +105,10 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           </Grid>
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
-              <InputLabel>Age Group</InputLabel>
+              <InputLabel>{renderLabel("Age Group", "Select your age group for applicable tax slabs")}</InputLabel>
               <Select
                 value={values.ageGroup}
-                label="Age Group"
+                label={renderLabel("Age Group", "Select your age group for applicable tax slabs")}
                 onChange={handleSelectChange('ageGroup')}
               >
                 {AGE_GROUPS.map(age => (
@@ -111,7 +125,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Income from Salary"
+              label={renderLabel("Income from Salary", "Enter your total income from salary including basic pay, allowances, and bonuses")}
               type="number"
               value={values.salaryIncome}
               onChange={handleTextFieldChange('salaryIncome')}
@@ -123,7 +137,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Income from Interest"
+              label={renderLabel("Income from Interest", "Enter your total interest income from savings accounts, fixed deposits, and other interest-bearing investments")}
               type="number"
               value={values.interestIncome}
               onChange={handleTextFieldChange('interestIncome')}
@@ -135,7 +149,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Rental Income"
+              label={renderLabel("Rental Income", "Enter your total income from renting properties (before standard deduction)")}
               type="number"
               value={values.rentalIncome}
               onChange={handleTextFieldChange('rentalIncome')}
@@ -147,7 +161,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Income from Digital Assets"
+              label={renderLabel("Income from Digital Assets", "Enter income from virtual digital assets, cryptocurrencies, or NFTs")}
               type="number"
               value={values.digitalAssetsIncome}
               onChange={handleTextFieldChange('digitalAssetsIncome')}
@@ -164,7 +178,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              label="HRA"
+              label={renderLabel("HRA", "Enter House Rent Allowance claimed for tax exemption")}
               type="number"
               value={values.hra}
               onChange={handleTextFieldChange('hra')}
@@ -176,7 +190,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              label="LTA"
+              label={renderLabel("LTA", "Enter Leave Travel Allowance claimed for tax exemption")}
               type="number"
               value={values.lta}
               onChange={handleTextFieldChange('lta')}
@@ -188,7 +202,7 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              label="Professional Tax"
+              label={renderLabel("Professional Tax", "Enter Professional Tax deducted by employer or paid directly")}
               type="number"
               value={values.professionalTax}
               onChange={handleTextFieldChange('professionalTax')}

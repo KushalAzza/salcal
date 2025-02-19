@@ -283,7 +283,7 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
       return "New tax slabs with higher basic exemption limit of ₹4,00,000 are applicable from FY 2025-26.";
     }
     if (selectedFY === "2024-25" && selectedRegime === "New Regime") {
-      return "Standard deduction of ₹50,000 is now available in New Regime from FY 2024-25.";
+      return "Standard deduction increased to ₹75,000 in New Regime from FY 2024-25.";
     }
     return null;
   };
@@ -293,18 +293,34 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
       <Typography variant="subtitle2" gutterBottom>
         Surcharge Rates:
       </Typography>
-      <Typography variant="body2" color="text.secondary">
-        • 10% of tax where total income exceeds ₹50 lakhs up to ₹1 crore
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        • 15% of tax where total income exceeds ₹1 crore up to ₹2 crores
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        • 25% of tax where total income exceeds ₹2 crores up to ₹5 crores
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        • 37% of tax where total income exceeds ₹5 crores
-      </Typography>
+      {selectedRegime === "Old Regime" ? (
+        <>
+          <Typography variant="body2" color="text.secondary">
+            • 10% of tax where total income exceeds ₹50 lakhs up to ₹1 crore
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • 15% of tax where total income exceeds ₹1 crore up to ₹2 crores
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • 25% of tax where total income exceeds ₹2 crores up to ₹5 crores
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • 37% of tax where total income exceeds ₹5 crores
+          </Typography>
+        </>
+      ) : (
+        <>
+          <Typography variant="body2" color="text.secondary">
+            • 10% of tax where total income exceeds ₹50 lakhs up to ₹1 crore
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • 15% of tax where total income exceeds ₹1 crore up to ₹2 crores
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • 25% of tax where total income exceeds ₹2 crores (maximum surcharge rate capped at 25%)
+          </Typography>
+        </>
+      )}
     </Box>
   );
 
@@ -314,7 +330,7 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
         Health & Education Cess:
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        • 4% on income tax (including surcharge) for all taxpayers
+        • A cess of 4% on the total income tax (including any surcharge) applies to all taxpayers
       </Typography>
     </Box>
   );
@@ -329,7 +345,7 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
           • Section 87A: Tax rebate up to ₹25,000 for resident individuals with total income up to ₹7 lakhs
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          • Standard deduction of ₹50,000 has been extended to the new regime from FY 2024-25
+          • Standard Deduction: ₹75,000 from FY 2024-25 onwards (increased from ₹50,000)
         </Typography>
       </Box>
     )

@@ -48,7 +48,7 @@ const TaxCalculator: React.FC = () => {
     'other': 0,
   });
 
-  const [selectedRegime, setSelectedRegime] = useState("Old Regime");
+  const [selectedRegime, setSelectedRegime] = useState("New Regime"); // Changed default to New Regime
 
   const [taxCalculation, setTaxCalculation] = useState<TaxState>({
     oldRegime: {

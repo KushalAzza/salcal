@@ -19,7 +19,10 @@ import {
   Box,
   Alert,
   Collapse,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 interface TaxSlabProps {
   selectedFY: string;
@@ -295,29 +298,43 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
       </Typography>
       {selectedRegime === "Old Regime" ? (
         <>
-          <Typography variant="body2" color="text.secondary">
-            • 10% of tax where total income exceeds ₹50 lakhs up to ₹1 crore
+          <Typography variant="subtitle2" color="text.primary" sx={{ mt: 1 }}>
+            • For the old tax regime, the rates remain:
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            • 15% of tax where total income exceeds ₹1 crore up to ₹2 crores
+            – 10% for income exceeding ₹50 lakhs up to ₹1 crore
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            • 25% of tax where total income exceeds ₹2 crores up to ₹5 crores
+            – 15% for income exceeding ₹1 crore up to ₹2 crores
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            • 37% of tax where total income exceeds ₹5 crores
+            – 25% for income exceeding ₹2 crores up to ₹5 crores
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            – 37% for income exceeding ₹5 crores
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+            For example, if your computed tax is ₹1,00,000 and your taxable income is ₹60 lakhs,
+            a surcharge of 10% (₹10,000) will be added, making your total tax ₹1,10,000.
           </Typography>
         </>
       ) : (
         <>
-          <Typography variant="body2" color="text.secondary">
-            • 10% of tax where total income exceeds ₹50 lakhs up to ₹1 crore
+          <Typography variant="subtitle2" color="text.primary" sx={{ mt: 1 }}>
+            • Under the new tax regime:
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            • 15% of tax where total income exceeds ₹1 crore up to ₹2 crores
+            – 10% for income exceeding ₹50 lakhs up to ₹1 crore
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            • 25% of tax where total income exceeds ₹2 crores (maximum surcharge rate capped at 25%)
+            – 15% for income exceeding ₹1 crore up to ₹2 crores
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            – 25% for income exceeding ₹2 crores (maximum surcharge rate capped at 25%)
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+            For example, if your computed tax is ₹1,00,000 and your taxable income is ₹2.5 crores,
+            a surcharge of 25% (₹25,000) would apply, ensuring the surcharge never exceeds this cap.
           </Typography>
         </>
       )}
@@ -330,25 +347,69 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
         Health & Education Cess:
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        • A cess of 4% on the total income tax (including any surcharge) applies to all taxpayers
+        • A cess of 4% on the total income tax (including any surcharge) applies to all taxpayers.
       </Typography>
     </Box>
   );
 
   const renderTaxReliefInfo = () => (
-    selectedRegime === "New Regime" && (
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          Tax Relief (New Regime):
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Section 87A: Tax rebate up to ₹25,000 for resident individuals with total income up to ₹7 lakhs
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Standard Deduction: ₹75,000 from FY 2024-25 onwards (increased from ₹50,000)
-        </Typography>
-      </Box>
-    )
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="subtitle2" gutterBottom>
+        Tax Relief:
+      </Typography>
+      {selectedRegime === "New Regime" ? (
+        <>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            • No Tax Liability up to ₹12 lakh:
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            From FY 2025-26, under the new tax regime, individuals with an annual income up to ₹12 lakh
+            will have no tax liability (excluding special rate incomes such as capital gains).
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            • Section 87A Rebate:
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Resident individuals with total income up to ₹12 lakh are now eligible for a rebate of up to ₹60,000.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            • Standard Deduction:
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            The new regime offers a standard deduction of ₹75,000 from FY 2024–25 onward.
+          </Typography>
+        </>
+      ) : (
+        <>
+          <Typography variant="body2" color="text.secondary">
+            Under the old regime, taxpayers can avail a variety of deductions and exemptions, such as:
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            • Standard Deduction of ₹50,000 for salaried individuals and pensioners.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • Deductions under Section 80C (up to ₹1.5 lakh) for investments in PPF, life insurance, ELSS, etc.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • Deductions under Section 80D for health insurance premiums.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • Exemptions for allowances such as HRA and LTA, and deductions on home loan interest.
+          </Typography>
+        </>
+      )}
+    </Box>
+  );
+
+  const renderLabel = (label: string, tooltip: string) => (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {label}
+      <Tooltip title={tooltip} arrow>
+        <IconButton size="small" sx={{ ml: 0.5 }}>
+          <HelpOutlineIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </div>
   );
 
   return (
@@ -361,10 +422,18 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={4}>
             <FormControl fullWidth>
-              <InputLabel>Tax Regime</InputLabel>
+              <InputLabel>
+                {renderLabel(
+                  "Tax Regime",
+                  "Choose between Old and New Tax Regime. New regime offers simplified tax slabs with no exemptions"
+                )}
+              </InputLabel>
               <Select
                 value={selectedRegime}
-                label="Tax Regime"
+                label={renderLabel(
+                  "Tax Regime",
+                  "Choose between Old and New Tax Regime. New regime offers simplified tax slabs with no exemptions"
+                )}
                 onChange={handleRegimeChange}
               >
                 {TAX_REGIMES.map(regime => (
@@ -375,10 +444,18 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
           </Grid>
           <Grid item xs={12} md={4}>
             <FormControl fullWidth>
-              <InputLabel>Financial Year</InputLabel>
+              <InputLabel>
+                {renderLabel(
+                  "Financial Year",
+                  "Select the assessment year for which you want to view tax slabs"
+                )}
+              </InputLabel>
               <Select
                 value={selectedFY}
-                label="Financial Year"
+                label={renderLabel(
+                  "Financial Year",
+                  "Select the assessment year for which you want to view tax slabs"
+                )}
                 onChange={handleFYChange}
               >
                 {FINANCIAL_YEARS.map(year => (
@@ -388,11 +465,23 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
             </FormControl>
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Age Group</InputLabel>
+            <FormControl fullWidth disabled={selectedRegime === "New Regime"}>
+              <InputLabel>
+                {renderLabel(
+                  "Age Group",
+                  selectedRegime === "New Regime" 
+                    ? "Age group is not applicable in New Tax Regime as it has uniform slabs for all age groups"
+                    : "Select your age group for applicable tax slabs under Old Regime"
+                )}
+              </InputLabel>
               <Select
                 value={selectedAgeGroup}
-                label="Age Group"
+                label={renderLabel(
+                  "Age Group",
+                  selectedRegime === "New Regime"
+                    ? "Age group is not applicable in New Tax Regime as it has uniform slabs for all age groups"
+                    : "Select your age group for applicable tax slabs under Old Regime"
+                )}
                 onChange={handleAgeGroupChange}
               >
                 {AGE_GROUPS.map(age => (

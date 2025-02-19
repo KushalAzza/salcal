@@ -282,14 +282,19 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
   };
 
   const getNotificationMessage = () => {
-    if (selectedFY === "2025-26" && selectedRegime === "New Regime") {
-      return "New tax slabs with higher basic exemption limit of ₹4,00,000 are applicable from FY 2025-26.";
-    }
-    if (selectedFY === "2024-25" && selectedRegime === "New Regime") {
-      return "Standard deduction increased to ₹75,000 in New Regime from FY 2024-25.";
+    if (selectedRegime === "New Regime") {
+      if (selectedFY === "2025-26") {
+        return "Under the New Regime for FY 2025-26, Section 87A rebate is increased to ₹60,000 for resident individuals with taxable income up to ₹12 lakh will have no tax liability.";
+      } else if (selectedFY === "2024-25" || selectedFY === "2022-23" || selectedFY === "2023-24") {
+        return `Under the New Regime for FY ${selectedFY}, resident individuals can claim rebate of up to ₹25,000 under Section 87A with taxable income up to ₹7 lakh will have no tax liability.`;
+      }
+    } else if (selectedRegime === "Old Regime") {
+      // Old Regime rules remain consistent across financial years.
+      return "Under the Old Regime, resident individuals can claim rebate of up to ₹12,500 under Section 87A with taxable income up to ₹5 lakh will have no tax liability.";
     }
     return null;
   };
+  
 
   const renderSurchargeInfo = () => (
     <Box sx={{ mt: 3 }}>
@@ -334,7 +339,7 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
             For example, if your computed tax is ₹1,00,000 and your taxable income is ₹2.5 crores,
-            a surcharge of 25% (₹25,000) would apply, ensuring the surcharge never exceeds this cap.
+            a surcharge of 25% (₹25,000) would apply, making your total tax ₹1,25,000 ensuring the surcharge never exceeds this cap.
           </Typography>
         </>
       )}
@@ -359,30 +364,20 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
       </Typography>
       {selectedRegime === "New Regime" ? (
         <>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            • No Tax Liability up to ₹12 lakh:
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            From FY 2025-26, under the new tax regime, individuals with an annual income up to ₹12 lakh
-            will have no tax liability (excluding special rate incomes such as capital gains).
+          <Typography variant="body2" color="text.secondary">
+            Under the new regime, resident individual taxpayers can avail a few deductions and exemptions, such as:
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            • Section 87A Rebate:
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Resident individuals with total income up to ₹12 lakh are now eligible for a rebate of up to ₹60,000.
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            • Standard Deduction:
+            • Standard Deduction of ₹75,000 from FY 2024–25 onwards from earlier ₹50,000.
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            The new regime offers a standard deduction of ₹75,000 from FY 2024–25 onward.
+            • Deduction for employer’s contribution to NPS account under Section 80CCD(2) up to 14% of employee's basic salary from FY 2024-25 onwards from earlier 10%. 
           </Typography>
         </>
       ) : (
         <>
           <Typography variant="body2" color="text.secondary">
-            Under the old regime, taxpayers can avail a variety of deductions and exemptions, such as:
+            Under the old regime, resident individual taxpayers can avail a variety of deductions and exemptions, such as:
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             • Standard Deduction of ₹50,000 for salaried individuals and pensioners.
@@ -425,14 +420,14 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
               <InputLabel>
                 {renderLabel(
                   "Tax Regime",
-                  "Choose between Old and New Tax Regime. New regime offers simplified tax slabs with no exemptions"
+                  "Choose between Old and New Tax Regime. New regime offers simplified tax slabs with no major exemptions"
                 )}
               </InputLabel>
               <Select
                 value={selectedRegime}
                 label={renderLabel(
                   "Tax Regime",
-                  "Choose between Old and New Tax Regime. New regime offers simplified tax slabs with no exemptions"
+                  "Choose between Old and New Tax Regime. New regime offers simplified tax slabs with no major exemptions"
                 )}
                 onChange={handleRegimeChange}
               >
@@ -447,7 +442,7 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
               <InputLabel>
                 {renderLabel(
                   "Financial Year",
-                  "Select the assessment year for which you want to view tax slabs"
+                  "Select the financial year for which you want to view tax slabs"
                 )}
               </InputLabel>
               <Select

@@ -368,7 +368,7 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
             Under the new regime, resident individual taxpayers can avail a few deductions and exemptions, such as:
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            • Standard Deduction of ₹75,000 from FY 2024–25 onwards from earlier ₹50,000.
+            • Standard Deduction of ₹75,000 from FY 2024-25 onwards from earlier ₹50,000.
           </Typography>
           <Typography variant="body2" color="text.secondary">
             • Deduction for employer’s contribution to NPS account under Section 80CCD(2) up to 14% of employee's basic salary from FY 2024-25 onwards from earlier 10%. 

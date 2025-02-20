@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -21,6 +21,7 @@ import {
   Collapse,
   Tooltip,
   IconButton,
+  Slider,
 } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
@@ -254,6 +255,8 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
   onAgeGroupChange,
   onRegimeChange,
 }) => {
+  const [taxableIncome, setTaxableIncome] = useState(0);
+
   const handleFYChange = (event: SelectChangeEvent) => {
     onFYChange(event.target.value);
   };
@@ -264,6 +267,10 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
 
   const handleRegimeChange = (event: SelectChangeEvent) => {
     onRegimeChange(event.target.value);
+  };
+
+  const handleSliderChange = (event: Event, newValue: number | number[]) => {
+    setTaxableIncome(newValue as number);
   };
 
   const getSlabData = () => {
@@ -281,10 +288,24 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
     }
   };
 
+  const calculateTax = () => {
+    const regimeKey = selectedRegime.toLowerCase().replace(' ', '');
+    const slabs = TAX_SLABS[regimeKey]?.[selectedFY]?.[selectedAgeGroup] || [];
+    let tax = 0;
+    for (const slab of slabs) {
+      const [min, max] = slab.range.split(' to ').map(s => parseInt(s.replace(/[^0-9]/g, ''), 10));
+      if (taxableIncome > min) {
+        const incomeInSlab = Math.min(taxableIncome, max) - min;
+        tax += incomeInSlab * parseFloat(slab.rate) / 100;
+      }
+    }
+    return tax;
+  };
+
   const getNotificationMessage = () => {
     if (selectedRegime === "New Regime") {
       if (selectedFY === "2025-26") {
-        return "Under the New Regime for FY 2025-26, Section 87A rebate is increased to ₹60,000 for resident individuals with taxable income up to ₹12 lakh will have no tax liability.";
+        return "Under the New Regime for FY 2025-26, resident individuals can claim rebate of up to ₹60,000 under Section 87A with taxable income up to ₹12 lakh will have no tax liability.";
       } else if (selectedFY === "2024-25" || selectedFY === "2022-23" || selectedFY === "2023-24") {
         return `Under the New Regime for FY ${selectedFY}, resident individuals can claim rebate of up to ₹25,000 under Section 87A with taxable income up to ₹7 lakh will have no tax liability.`;
       }
@@ -368,10 +389,13 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
             Under the new regime, resident individual taxpayers can avail a few deductions and exemptions, such as:
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            • Standard Deduction of ₹75,000 from FY 2024-25 onwards from earlier ₹50,000.
+            • Standard Deduction of ₹75,000 from FY 2024-25 onwards, earlier it was ₹50,000.
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            • Deduction for employer’s contribution to NPS account under Section 80CCD(2) up to 14% of employee's basic salary from FY 2024-25 onwards from earlier 10%. 
+            • Marginal Relief for taxpayers from FY2025-26 onwards with taxable income above ₹12,00,000 upto ₹12,75,000; protecting from a disproportionate tax increase.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            • Deduction for employer’s contribution to NPS account under Section 80CCD(2) up to 14% of employee's basic salary from FY 2024-25 onwards, earlier it was 10%. 
           </Typography>
         </>
       ) : (
@@ -511,6 +535,28 @@ const TaxSlab: React.FC<TaxSlabProps> = ({
             </TableBody>
           </Table>
         </TableContainer>
+
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Taxable Income
+          </Typography>
+          <Slider
+            value={taxableIncome}
+            onChange={handleSliderChange}
+            aria-labelledby="taxable-income-slider"
+            valueLabelDisplay="auto"
+            step={10000}
+            marks
+            min={0}
+            max={5000000}
+          />
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            Taxable Income: ₹{taxableIncome.toLocaleString('en-IN')}
+          </Typography>
+          <Typography variant="body1" sx={{ mt: 1 }}>
+            Estimated Income Tax: ₹{calculateTax().toLocaleString('en-IN')}
+          </Typography>
+        </Box>
 
         {renderSurchargeInfo()}
         {renderCessInfo()}

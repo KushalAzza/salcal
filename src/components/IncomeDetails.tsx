@@ -13,8 +13,10 @@ import {
   SelectChangeEvent,
   Tooltip,
   IconButton,
+  Box,
 } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import EditIcon from '@mui/icons-material/Edit';
 
 interface IncomeDetailsProps {
   onUpdate: (values: any) => void;
@@ -47,6 +49,8 @@ const AGE_GROUPS = [
 
 const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }) => {
   const [values, setValues] = React.useState(initialValues);
+  const [editingField, setEditingField] = React.useState<string | null>(null);
+  const [tempValue, setTempValue] = React.useState<string>('');
 
   useEffect(() => {
     setValues(initialValues);
@@ -61,15 +65,33 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
     onUpdate(newValues);
   };
 
-  const handleTextFieldChange = (field: string) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const newValues = {
-      ...values,
-      [field]: Number(event.target.value),
-    };
-    setValues(newValues);
-    onUpdate(newValues);
+  const handleEdit = (field: string, value: number) => {
+    setEditingField(field);
+    setTempValue(value.toString());
+  };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/[^0-9]/g, '');
+    setTempValue(value);
+  };
+
+  const handleBlur = () => {
+    if (editingField) {
+      const value = parseInt(tempValue) || 0;
+      const newValues = {
+        ...values,
+        [editingField]: value,
+      };
+      setValues(newValues);
+      onUpdate(newValues);
+      setEditingField(null);
+    }
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleBlur();
+    }
   };
 
   const renderLabel = (label: string, tooltip: string) => (
@@ -77,10 +99,81 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
       {label}
       <Tooltip title={tooltip} arrow>
         <IconButton size="small" sx={{ ml: 0.5 }}>
-          <HelpOutlineIcon fontSize="small" />
+          <HelpOutlineIcon sx={{ fontSize: '1rem' }} />
         </IconButton>
       </Tooltip>
     </div>
+  );
+
+  const renderEditableField = (field: string, value: number, label: string, tooltip: string) => (
+    <>
+      <Typography 
+        variant="body2" 
+        color="text.secondary" 
+        sx={{ 
+          fontSize: '0.8rem',
+          mb: 0.5 
+        }}
+      >
+        {renderLabel(label, tooltip)}
+      </Typography>
+      <Box sx={{ 
+        bgcolor: '#ffffff',
+        borderRadius: 1,
+        border: '1px solid rgba(0, 0, 0, 0.23)',
+        color: '#000000',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        minHeight: '56px',
+        px: 2,
+        py: 1,
+        fontSize: '1rem'
+      }}>
+        {editingField === field ? (
+          <TextField
+            value={tempValue}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            variant="standard"
+            sx={{
+              input: { 
+                color: '#000000', 
+                fontSize: '1rem'
+              },
+              width: '100%',
+              '& .MuiInput-underline:before': { borderBottomColor: 'rgba(0, 0, 0, 0.42)' },
+              '& .MuiInput-underline:hover:before': { borderBottomColor: 'rgba(0, 0, 0, 0.87)' },
+            }}
+            autoFocus
+          />
+        ) : (
+          <>
+            <Box 
+              onClick={() => handleEdit(field, value)}
+              sx={{ 
+                cursor: 'pointer',
+                flex: 1,
+                fontSize: '1rem',
+                '&:hover': {
+                  color: 'primary.main'
+                }
+              }}
+            >
+              ₹{value.toLocaleString('en-IN')}
+            </Box>
+            <IconButton 
+              size="small" 
+              onClick={() => handleEdit(field, value)}
+              sx={{ color: '#000000', ml: 1 }}
+            >
+              <EditIcon />
+            </IconButton>
+          </>
+        )}
+      </Box>
+    </>
   );
 
   return (
@@ -92,7 +185,9 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
-              <InputLabel>{renderLabel("Financial Year", "Select the financial year for tax calculation")}</InputLabel>
+              <InputLabel>
+                {renderLabel("Financial Year", "Select the financial year for tax calculation")}
+              </InputLabel>
               <Select
                 value={values.financialYear}
                 label={renderLabel("Financial Year", "Select the financial year for tax calculation")}
@@ -106,7 +201,9 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
           </Grid>
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
-              <InputLabel>{renderLabel("Age Group", "Select your age group for applicable tax slabs")}</InputLabel>
+              <InputLabel>
+                {renderLabel("Age Group", "Select your age group for applicable tax slabs")}
+              </InputLabel>
               <Select
                 value={values.ageGroup}
                 label={renderLabel("Age Group", "Select your age group for applicable tax slabs")}
@@ -119,98 +216,70 @@ const IncomeDetails: React.FC<IncomeDetailsProps> = ({ onUpdate, initialValues }
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, fontSize: '0.8rem' }}>
               Income Sources
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={renderLabel("Income from Salary", "Enter your total income from salary including basic pay, allowances, and bonuses")}
-              type="number"
-              value={values.salaryIncome}
-              onChange={handleTextFieldChange('salaryIncome')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
+            {renderEditableField(
+              'salaryIncome',
+              values.salaryIncome,
+              "Income from Salary",
+              "Enter your total income from salary including basic pay, allowances, and bonuses"
+            )}
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={renderLabel("Income from Interest", "Enter your total interest income from savings accounts, fixed deposits, and other interest-bearing investments")}
-              type="number"
-              value={values.interestIncome}
-              onChange={handleTextFieldChange('interestIncome')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
+            {renderEditableField(
+              'interestIncome',
+              values.interestIncome,
+              "Income from Interest",
+              "Enter your total interest income from savings accounts, fixed deposits, and other interest-bearing investments"
+            )}
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={renderLabel("Rental Income", "Enter your total income from renting properties (before standard deduction)")}
-              type="number"
-              value={values.rentalIncome}
-              onChange={handleTextFieldChange('rentalIncome')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
+            {renderEditableField(
+              'rentalIncome',
+              values.rentalIncome,
+              "Rental Income",
+              "Enter your total income from renting properties (before standard deduction)"
+            )}
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={renderLabel("Income from Digital Assets", "Enter income from virtual digital assets, cryptocurrencies, or NFTs")}
-              type="number"
-              value={values.digitalAssetsIncome}
-              onChange={handleTextFieldChange('digitalAssetsIncome')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
+            {renderEditableField(
+              'digitalAssetsIncome',
+              values.digitalAssetsIncome,
+              "Income from Digital Assets",
+              "Enter income from virtual digital assets, cryptocurrencies, or NFTs"
+            )}
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, fontSize: '0.8rem' }}>
               Exemptions & Allowances
             </Typography>
           </Grid>
           <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label={renderLabel("HRA", "Enter House Rent Allowance claimed for tax exemption")}
-              type="number"
-              value={values.hra}
-              onChange={handleTextFieldChange('hra')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
+            {renderEditableField(
+              'hra',
+              values.hra,
+              "HRA",
+              "Enter House Rent Allowance claimed for tax exemption"
+            )}
           </Grid>
           <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label={renderLabel("LTA", "Enter Leave Travel Allowance claimed for tax exemption")}
-              type="number"
-              value={values.lta}
-              onChange={handleTextFieldChange('lta')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
+            {renderEditableField(
+              'lta',
+              values.lta,
+              "LTA",
+              "Enter Leave Travel Allowance claimed for tax exemption"
+            )}
           </Grid>
           <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label={renderLabel("Professional Tax", "Enter Professional Tax deducted by employer or paid directly")}
-              type="number"
-              value={values.professionalTax}
-              onChange={handleTextFieldChange('professionalTax')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
+            {renderEditableField(
+              'professionalTax',
+              values.professionalTax,
+              "Professional Tax",
+              "Enter Professional Tax deducted by employer or paid directly"
+            )}
           </Grid>
         </Grid>
       </CardContent>

@@ -8,8 +8,10 @@ import {
   InputAdornment,
   Tooltip,
   IconButton,
+  Box,
 } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import EditIcon from '@mui/icons-material/Edit';
 
 interface DeductionsProps {
   onUpdate: (values: any) => void;
@@ -69,21 +71,134 @@ const DEDUCTION_FIELDS = [
 
 const Deductions: React.FC<DeductionsProps> = ({ onUpdate, initialValues }) => {
   const [values, setValues] = React.useState<Record<string, number>>(initialValues);
+  const [editingField, setEditingField] = React.useState<string | null>(null);
+  const [tempValue, setTempValue] = React.useState<string>('');
 
   useEffect(() => {
     setValues(initialValues);
   }, [initialValues]);
 
-  const handleChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = Number(event.target.value);
-    const maxLimit = DEDUCTION_FIELDS.find(f => f.id === field)?.maxLimit;
-    
-    const validValue = maxLimit ? Math.min(newValue, maxLimit) : newValue;
-    const newValues = { ...values, [field]: validValue };
-    
-    setValues(newValues);
-    onUpdate(newValues);
+  const handleEdit = (field: string, value: number) => {
+    setEditingField(field);
+    setTempValue(value.toString());
   };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/[^0-9]/g, '');
+    setTempValue(value);
+  };
+
+  const handleBlur = () => {
+    if (editingField) {
+      const value = parseInt(tempValue) || 0;
+      const maxLimit = DEDUCTION_FIELDS.find(f => f.id === editingField)?.maxLimit;
+      const validValue = maxLimit ? Math.min(value, maxLimit) : value;
+      const newValues = { ...values, [editingField]: validValue };
+      setValues(newValues);
+      onUpdate(newValues);
+      setEditingField(null);
+    }
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleBlur();
+    }
+  };
+
+  const renderLabel = (label: string, tooltip: string) => (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {label}
+      <Tooltip title={tooltip} arrow>
+        <IconButton size="small" sx={{ ml: 0.5 }}>
+          <HelpOutlineIcon sx={{ fontSize: '1rem' }} />
+        </IconButton>
+      </Tooltip>
+    </div>
+  );
+
+  const renderEditableField = (field: { id: string; label: string; tooltip: string; maxLimit: number | null }) => (
+    <>
+      <Typography 
+        variant="body2" 
+        color="text.secondary" 
+        sx={{ 
+          fontSize: '0.8rem',
+          mb: 0.5 
+        }}
+      >
+        {renderLabel(field.label, field.tooltip)}
+      </Typography>
+      <Box sx={{ 
+        bgcolor: '#ffffff',
+        borderRadius: 1,
+        border: '1px solid rgba(0, 0, 0, 0.23)',
+        color: '#000000',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        minHeight: '56px',
+        px: 2,
+        py: 1,
+        fontSize: '1rem'
+      }}>
+        {editingField === field.id ? (
+          <TextField
+            value={tempValue}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            variant="standard"
+            sx={{
+              input: { 
+                color: '#000000', 
+                fontSize: '1rem'
+              },
+              width: '100%',
+              '& .MuiInput-underline:before': { borderBottomColor: 'rgba(0, 0, 0, 0.42)' },
+              '& .MuiInput-underline:hover:before': { borderBottomColor: 'rgba(0, 0, 0, 0.87)' },
+            }}
+            autoFocus
+          />
+        ) : (
+          <>
+            <Box 
+              onClick={() => handleEdit(field.id, values[field.id])}
+              sx={{ 
+                cursor: 'pointer',
+                flex: 1,
+                fontSize: '1rem',
+                '&:hover': {
+                  color: 'primary.main'
+                }
+              }}
+            >
+              ₹{values[field.id].toLocaleString('en-IN')}
+            </Box>
+            <IconButton 
+              size="small" 
+              onClick={() => handleEdit(field.id, values[field.id])}
+              sx={{ color: '#000000', ml: 1 }}
+            >
+              <EditIcon />
+            </IconButton>
+          </>
+        )}
+      </Box>
+      {field.maxLimit && (
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            fontSize: '0.8rem',
+            mt: 0.5 
+          }}
+        >
+          Maximum limit: ₹{field.maxLimit.toLocaleString()}
+        </Typography>
+      )}
+    </>
+  );
 
   return (
     <Card>
@@ -94,26 +209,7 @@ const Deductions: React.FC<DeductionsProps> = ({ onUpdate, initialValues }) => {
         <Grid container spacing={3}>
           {DEDUCTION_FIELDS.map((field) => (
             <Grid item xs={12} md={6} key={field.id}>
-              <TextField
-                fullWidth
-                label={
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {field.label}
-                    <Tooltip title={field.tooltip} arrow>
-                      <IconButton size="small" sx={{ ml: 0.5 }}>
-                        <HelpOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </div>
-                }
-                type="number"
-                value={values[field.id]}
-                onChange={handleChange(field.id)}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-                }}
-                helperText={field.maxLimit ? `Maximum limit: ₹${field.maxLimit.toLocaleString()}` : ''}
-              />
+              {renderEditableField(field)}
             </Grid>
           ))}
         </Grid>

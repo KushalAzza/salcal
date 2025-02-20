@@ -32,6 +32,8 @@ const TaxCalculator: React.FC = () => {
     rentalIncome: 0,
     digitalAssetsIncome: 0,
     otherIncome: 0,
+    businessIncome: 0, // Added businessIncome
+    otherSourcesIncome: 0, // Added otherSourcesIncome
     hra: 0,
     lta: 0,
     professionalTax: 0,
@@ -130,7 +132,9 @@ const TaxCalculator: React.FC = () => {
       incomeDetails.interestIncome +
       incomeDetails.rentalIncome +
       incomeDetails.digitalAssetsIncome +
-      incomeDetails.otherIncome;
+      incomeDetails.otherIncome +
+      incomeDetails.businessIncome + // Added businessIncome
+      incomeDetails.otherSourcesIncome; // Added otherSourcesIncome
 
     const totalDeductions = 
       deductions['80c'] +
